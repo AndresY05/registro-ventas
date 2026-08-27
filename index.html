@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Ventas</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>📊 Registro de Ventas</h1>
+    <div class="header-stats" id="headerStats"></div>
+  </header>
+
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="ventas">Ventas</button>
+    <button class="tab-btn" data-tab="productos">Productos</button>
+    <button class="tab-btn" data-tab="reportes">Reportes</button>
+  </nav>
+
+  <main>
+    <!-- PESTAÑA VENTAS -->
+    <section id="tab-ventas" class="tab-content active">
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <input type="text" id="searchVentas" placeholder="Buscar por producto o cliente...">
+          <input type="date" id="filterFecha">
+        </div>
+        <button class="btn btn-primary" id="btnNuevaVenta">+ Nueva Venta</button>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio unit.</th>
+            <th>Subtotal</th>
+            <th>Cliente</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="ventasBody"></tbody>
+      </table>
+      <div id="emptyVentas" class="empty-state">
+        <p>No hay ventas registradas. ¡Agrega la primera!</p>
+      </div>
+    </section>
+
+    <!-- PESTAÑA PRODUCTOS -->
+    <section id="tab-productos" class="tab-content">
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <input type="text" id="searchProductos" placeholder="Buscar producto...">
+        </div>
+        <button class="btn btn-primary" id="btnNuevoProducto">+ Nuevo Producto</button>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="productosBody"></tbody>
+      </table>
+      <div id="emptyProductos" class="empty-state">
+        <p>No hay productos en el catálogo. ¡Agrega el primero!</p>
+      </div>
+    </section>
+
+    <!-- PESTAÑA REPORTES -->
+    <section id="tab-reportes" class="tab-content">
+      <div class="report-grid">
+        <div class="card stat-card">
+          <h3>Ventas Totales</h3>
+          <p class="stat-value" id="statTotal">$0.00</p>
+        </div>
+        <div class="card stat-card">
+          <h3>Ventas Hoy</h3>
+          <p class="stat-value" id="statHoy">$0.00</p>
+        </div>
+        <div class="card stat-card">
+          <h3>Ventas Este Mes</h3>
+          <p class="stat-value" id="statMes">$0.00</p>
+        </div>
+        <div class="card stat-card">
+          <h3>Total de Productos</h3>
+          <p class="stat-value" id="statProductos">0</p>
+        </div>
+      </div>
+
+      <div class="card report-card">
+        <h3>Ventas por Mes</h3>
+        <div id="monthlyChart" class="chart"></div>
+      </div>
+
+      <div class="card report-card">
+        <h3>Productos Más Vendidos</h3>
+        <table class="data-table">
+          <thead>
+            <tr><th>Producto</th><th>Unidades</th><th>Ingresos</th></tr>
+          </thead>
+          <tbody id="topProductosBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card report-card">
+        <h3>Datos</h3>
+        <div class="toolbar">
+          <button class="btn btn-secondary" id="btnExportCSV">⬇ Exportar CSV</button>
+          <button class="btn btn-secondary" id="btnBackup">💾 Copia de seguridad</button>
+          <button class="btn btn-secondary" id="btnImport">📂 Importar copia</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL VENTA -->
+  <div class="modal-overlay" id="modalVenta">
+    <div class="modal">
+      <h2 id="modalVentaTitle">Nueva Venta</h2>
+      <form id="formVenta">
+        <input type="hidden" id="ventaId">
+        <div class="form-grid">
+          <label>
+            Producto *
+            <select id="ventaProducto" required></select>
+          </label>
+          <label>
+            Cantidad *
+            <input type="number" id="ventaCantidad" min="1" value="1" required>
+          </label>
+          <label>
+            Precio unitario *
+            <input type="number" id="ventaPrecio" step="0.01" min="0" required>
+          </label>
+          <label>
+            Cliente
+            <input type="text" id="ventaCliente" placeholder="Nombre del cliente">
+          </label>
+          <label>
+            Fecha
+            <input type="date" id="ventaFecha">
+          </label>
+          <label>
+            Subtotal
+            <input type="text" id="ventaSubtotal" readonly>
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close="modalVenta">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL PRODUCTO -->
+  <div class="modal-overlay" id="modalProducto">
+    <div class="modal">
+      <h2 id="modalProductoTitle">Nuevo Producto</h2>
+      <form id="formProducto">
+        <input type="hidden" id="productoId">
+        <div class="form-grid">
+          <label>
+            Nombre *
+            <input type="text" id="productoNombre" required>
+          </label>
+          <label>
+            Precio *
+            <input type="number" id="productoPrecio" step="0.01" min="0" required>
+          </label>
+          <label>
+            Stock
+            <input type="number" id="productoStock" min="0" value="0">
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close="modalProducto">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal confirmación -->
+  <div class="modal-overlay" id="modalConfirm">
+    <div class="modal small">
+      <h2>Confirmar</h2>
+      <p id="confirmText">¿Estás seguro?</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" data-close="modalConfirm">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirmYes">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
